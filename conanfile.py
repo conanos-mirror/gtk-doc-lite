@@ -40,19 +40,21 @@ class GtkdocliteConan(ConanFile):
         os.rename('gtk-doc-%s' % self.version, self.source_subfolder)
         os.unlink(archive_name)
 
-    def package(self):
-        shutil.copyfile("gtkdocize.in", "gtkdocize")
-        replacements = {'@PACKAGE@': 'gtk-doc',
-                        '@VERSION@': self.version,
-                        '@prefix@': self.copy._base_dst,##!FIXME prefix
-                        '@datarootdir@': '${prefix}/share',
-                        '@datadir@': '${datarootdir}'}
-        self.__replace("gtkdocize", replacements)
+    def build(self):
+        pass
 
-        self.copy("gtkdocize", dst="bin")
-        self.copy("gtk-doc.m4", dst="share/aclocal")
-        self.copy("gtk-doc.make", dst="share/gtk-doc/data")
-        
+    def package(self):
+        with tools.chdir(self.source_subfolder):
+            shutil.copyfile("gtkdocize.in", "gtkdocize")
+            replacements = {'@PACKAGE@': 'gtk-doc',
+                            '@VERSION@': self.version,
+                            '@prefix@': self.copy._base_dst,  ##!FIXME prefix
+                            '@datarootdir@': '${prefix}/share',
+                            '@datadir@': '${datarootdir}'}
+            self.__replace("gtkdocize", replacements)
+        self.copy("gtkdocize", dst="bin", src=self.source_subfolder)
+        self.copy("gtk-doc.m4", dst="share/aclocal", src=self.source_subfolder)
+        self.copy("gtk-doc.make", dst="share/gtk-doc/data", src=self.source_subfolder)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
