@@ -1,0 +1,12 @@
+diff -Nur gtk-doc-GTK_DOC_1_29/meson.build gtk-doc-GTK_DOC_1_29-meson/meson.build
+--- gtk-doc-GTK_DOC_1_29/meson.build	2018-08-28 07:22:39.000000000 -0700
++++ gtk-doc-GTK_DOC_1_29-meson/meson.build	2018-11-29 03:27:00.399134664 -0800
+@@ -12,7 +12,7 @@
+ version_arr = version.split('.')
+ version_major = version_arr[0].to_int()
+ version_minor = version_arr[1].to_int()
+-version_micro = version_arr[2].to_int()
++# version_micro = version_arr[2].to_int()
+ 
+ package_name = meson.project_name()
+ 
