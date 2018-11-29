@@ -11,7 +11,8 @@ class GtkdocliteConan(ConanFile):
     url = "https://github.com/conanos/gtk-doc-lite"
     homepage = "https://github.com/GNOME/gtk-doc"
     license = "GPLv2Plus"
-    exports = ["COPYING"]
+    patch = 'micro-version-not-exist.patch'
+    exports = ["COPYING", patch]
     generators = "visual_studio", "gcc"
     settings = "os", "compiler", "build_type", "arch"
     options = {
@@ -20,12 +21,15 @@ class GtkdocliteConan(ConanFile):
     }
     default_options = { 'shared': False, 'fPIC': True }
     _source_subfolder = "source_subfolder"
-    _build_subfolder = "build_subfolder"
+    _build_subfolder = os.path.join(_source_subfolder,"build")
 
     def requirements(self):
         self.requires.add("glib/2.58.1@conanos/stable")
 
         config_scheme(self)
+    
+    def build_requirements(self):
+        self.build_requires("libffi/3.299999@conanos/stable")
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -38,14 +42,15 @@ class GtkdocliteConan(ConanFile):
         version_='_'.join(self.version.split('.'))
         url_ = 'https://github.com/GNOME/gtk-doc/archive/GTK_DOC_{version}.tar.gz'.format(version=version_)
         tools.get(url_)
+        tools.patch(patch_file=self.patch)
         extracted_dir = "gtk-doc-GTK_DOC_" + version_
         os.rename(extracted_dir, self._source_subfolder)
 
     def build(self):
-        pkg_config_paths=[ os.path.join(self.deps_cpp_info[i].rootpath, "lib", "pkgconfig") for i in ["glib"] ]
+        pkg_config_paths=[ os.path.join(self.deps_cpp_info[i].rootpath, "lib", "pkgconfig") for i in ["glib","libffi"] ]
         prefix = os.path.join(self.build_folder, self._build_subfolder, "install")
         meson = Meson(self)
-        defs = {'prefix' : prefix}
+        defs = {'prefix' : prefix, 'yelp_manual':'false'}
         if self.settings.os == "Linux":
             defs.update({'libdir':'lib'})
         meson.configure(defs=defs,source_dir=self._source_subfolder, build_dir=self._build_subfolder,
