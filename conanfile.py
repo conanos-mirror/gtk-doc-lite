@@ -1,60 +1,60 @@
 from conans import ConanFile, CMake, tools
 import shutil
-#from shutil import copyfile
 import os
+from conanos.build import config_scheme
+from conans import Meson
 
 class GtkdocliteConan(ConanFile):
     name = "gtk-doc-lite"
-    version = "1.27"
+    version = "1.29"
     description = "GTK-Doc is a project which was started to generate API documentation from comments added to C code"
     url = "https://github.com/conanos/gtk-doc-lite"
-    homepage = "https://github.com/GNOME/gdk-pixbuf"
+    homepage = "https://github.com/GNOME/gtk-doc"
     license = "GPLv2Plus"
+    exports = ["COPYING"]
+    generators = "visual_studio", "gcc"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=True"
-    generators = "cmake"
-    source_subfolder = "source_subfolder"
+    options = {
+        "shared": [True, False],
+        "fPIC": [True, False],
+    }
+    default_options = { 'shared': False, 'fPIC': True }
+    _source_subfolder = "source_subfolder"
+    _build_subfolder = "build_subfolder"
 
-    def __replace(self, filepath, replacements):
-        ''' Replaces keys in the 'replacements' dict with their values in file '''
-        with open(filepath, 'r') as f:
-            content = f.read()
-        for k, v in replacements.iteritems():
-            content = content.replace(k, v)
-        with open(filepath, 'w+') as f:
-            f.write(content)
+    def requirements(self):
+        self.requires.add("glib/2.58.1@conanos/stable")
+
+        config_scheme(self)
+
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+    
+    def configure(self):
+        del self.settings.compiler.libcxx
 
     def source(self):
-        tarball_name = 'gtk-doc-{version}.tar'.format(version=self.version)
-        archive_name = '%s.xz' % tarball_name
-        url_ = 'https://gstreamer.freedesktop.org/src/mirror/%s'%(archive_name)
-        tools.download(url_, archive_name)
-        
-        if self.settings.os == 'Windows':
-            self.run('7z x %s' % archive_name)
-            self.run('7z x %s' % tarball_name)
-            os.unlink(tarball_name)
-        else:
-            self.run('tar -xJf %s' % archive_name)
-        os.rename('gtk-doc-%s' % self.version, self.source_subfolder)
-        os.unlink(archive_name)
+        version_='_'.join(self.version.split('.'))
+        url_ = 'https://github.com/GNOME/gtk-doc/archive/GTK_DOC_{version}.tar.gz'.format(version=version_)
+        tools.get(url_)
+        extracted_dir = "gtk-doc-GTK_DOC_" + version_
+        os.rename(extracted_dir, self._source_subfolder)
 
     def build(self):
-        pass
+        pkg_config_paths=[ os.path.join(self.deps_cpp_info[i].rootpath, "lib", "pkgconfig") for i in ["glib"] ]
+        prefix = os.path.join(self.build_folder, self._build_subfolder, "install")
+        meson = Meson(self)
+        defs = {'prefix' : prefix}
+        if self.settings.os == "Linux":
+            defs.update({'libdir':'lib'})
+        meson.configure(defs=defs,source_dir=self._source_subfolder, build_dir=self._build_subfolder,
+                        pkg_config_paths=pkg_config_paths)
+        meson.build()
+        self.run('ninja -C {0} install'.format(meson.build_dir))
 
     def package(self):
-        with tools.chdir(self.source_subfolder):
-            shutil.copyfile("gtkdocize.in", "gtkdocize")
-            replacements = {'@PACKAGE@': 'gtk-doc',
-                            '@VERSION@': self.version,
-                            '@prefix@': self.copy._base_dst,  ##!FIXME prefix
-                            '@datarootdir@': '${prefix}/share',
-                            '@datadir@': '${datarootdir}'}
-            self.__replace("gtkdocize", replacements)
-        self.copy("gtkdocize", dst="bin", src=self.source_subfolder)
-        self.copy("gtk-doc.m4", dst="share/aclocal", src=self.source_subfolder)
-        self.copy("gtk-doc.make", dst="share/gtk-doc/data", src=self.source_subfolder)
+        self.copy("*", dst=self.package_folder, src=os.path.join(self.build_folder,self._build_subfolder, "install"))
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
