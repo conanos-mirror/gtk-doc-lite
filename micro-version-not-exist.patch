@@ -1,6 +1,6 @@
 diff -Nur gtk-doc-GTK_DOC_1_29/meson.build gtk-doc-GTK_DOC_1_29-meson/meson.build
 --- gtk-doc-GTK_DOC_1_29/meson.build	2018-08-28 07:22:39.000000000 -0700
-+++ gtk-doc-GTK_DOC_1_29-meson/meson.build	2018-11-29 03:27:00.399134664 -0800
++++ gtk-doc-GTK_DOC_1_29-meson/meson.build	2018-11-29 04:00:43.917963280 -0800
 @@ -12,7 +12,7 @@
  version_arr = version.split('.')
  version_major = version_arr[0].to_int()
@@ -10,3 +10,117 @@ diff -Nur gtk-doc-GTK_DOC_1_29/meson.build gtk-doc-GTK_DOC_1_29-meson/meson.buil
  
  package_name = meson.project_name()
  
+@@ -52,21 +52,21 @@
+ source_highlight_prg = find_program('source-highlight', required: false)
+ highlight_prg = find_program('highlight', required: false)
+ vim_prg = find_program('vim', required: false)
+-
++message('============================0')
+ python_prg_path = join_paths(python_prg.path())
+ pkgconfig_prg_path = join_paths(pkgconfig_prg.path())
+ xsltproc_prg_path = join_paths(xsltproc_prg.path())
+-
++message('============================1')
+ dblatex_prg_path = ''
+ if dblatex_prg.found()
+   dblatex_prg_path = join_paths(dblatex_prg.path())
+ endif
+-
++message('============================2')
+ fop_prg_path = ''
+ if fop_prg.found()
+   fop_prg_path = join_paths(fop_prg.path())
+ endif
+-
++message('============================3')
+ highlight_prg_path = ''
+ highlight_prg_args = ''
+ if source_highlight_prg.found()
+@@ -89,7 +89,7 @@
+ elif vim_prg.found()
+   highlight_prg_path = join_paths(vim_prg.path())
+ endif
+-
++message('============================4')
+ # Options
+ generate_pdf_output = true
+ if not dblatex_prg.found() and not fop_prg.found()
+@@ -98,7 +98,7 @@
+ 
+ # Code
+ subdir('gtkdoc')
+-
++message('============================5')
+ gtkdoc_binaires = [
+   'gtkdoc-check',
+   'gtkdoc-depscan',
+@@ -112,7 +112,7 @@
+   'gtkdoc-scan',
+   'gtkdoc-scangobj',
+ ]
+-
++message('============================6')
+ binary_in = configuration_data()
+ binary_in.set('PYTHON', python_prg_path)
+ binary_in.set('PKG_CONFIG', pkgconfig_prg_path)
+@@ -126,7 +126,7 @@
+ binary_in.set('PACKAGE', package_name)
+ 
+ binary_in.set('VERSION', version)
+-
++message('============================7')
+ foreach binary: gtkdoc_binaires
+   configure_file(
+     input: '@0@.in'.format(binary),
+@@ -136,7 +136,7 @@
+     install_dir: bindir,
+   )
+ endforeach
+-
++message('============================8')
+ # Data
+ gtkdoc_data = [
+   'devhelp2.xsd',
+@@ -151,7 +151,7 @@
+ )
+ 
+ subdir('style')
+-
++message('============================9')
+ if get_option('autotools_support') == true
+   subdir('buildsystems/autotools')
+ endif
+@@ -159,7 +159,7 @@
+ if get_option('cmake_support') == true
+   subdir('buildsystems/cmake')
+ endif
+-
++message('============================10')
+ gtkdoc_pc = configuration_data()
+ gtkdoc_pc.set('prefix', prefix)
+ gtkdoc_pc.set('exec_prefix', '${prefix}')
+@@ -167,7 +167,7 @@
+ 
+ gtkdoc_pc.set('PACKAGE', package_name)
+ gtkdoc_pc.set('VERSION', version)
+-
++message('============================11')
+ configure_file(
+   input: 'gtk-doc.pc.in',
+   output: 'gtk-doc.pc',
+@@ -178,7 +178,7 @@
+ 
+ subdir('help')
+ subdir('tests')
+-
++message('============================12')
+ summary = [
+   '',
+   '------',
+@@ -197,5 +197,5 @@
+   '        User manual: @0@'.format(get_option('yelp_manual')),
+   '------',
+ ]
+-
++message('============================13')
+ message('\n'.join(summary))
