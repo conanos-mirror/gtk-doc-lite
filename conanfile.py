@@ -21,7 +21,7 @@ class GtkdocliteConan(ConanFile):
     }
     default_options = { 'shared': False, 'fPIC': True }
     _source_subfolder = "source_subfolder"
-    _build_subfolder = os.path.join(_source_subfolder,"build")
+    _build_subfolder = "build_subfolder"
 
     def requirements(self):
         self.requires.add("glib/2.58.1@conanos/stable")
