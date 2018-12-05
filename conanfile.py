@@ -19,14 +19,12 @@ class GtkdocliteConan(ConanFile):
         "shared": [True, False],
         "fPIC": [True, False],
     }
-    default_options = { 'shared': False, 'fPIC': True }
+    default_options = { 'shared': True, 'fPIC': True }
     _source_subfolder = "source_subfolder"
     _build_subfolder = "build_subfolder"
 
     def requirements(self):
         self.requires.add("glib/2.58.1@conanos/stable")
-
-        config_scheme(self)
     
     def build_requirements(self):
         self.build_requires("libffi/3.299999@conanos/stable")
@@ -37,6 +35,8 @@ class GtkdocliteConan(ConanFile):
     
     def configure(self):
         del self.settings.compiler.libcxx
+
+        config_scheme(self)
 
     def source(self):
         version_='_'.join(self.version.split('.'))
